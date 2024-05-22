@@ -10,6 +10,9 @@ import { toast } from 'react-toastify';
 import { AxiosError, isAxiosError } from 'axios';
 import axiosInstance from '@/helpers/axios-instance';
 import userState from '@/utils/user-state';
+import { useState } from 'react';
+import Passwordvisible from '../assets/svg/passwordvisible.tsx';
+import Passwordhide from '../assets/svg/passwordhide.tsx';
 
 function signup() {
   const navigate = useNavigate();
@@ -21,19 +24,25 @@ function signup() {
     setError
   } = useForm<TSignUpSchema>({ resolver: zodResolver(signUpSchema) });
 
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   const onSubmit = async (data: FieldValues) => {
     try {
-      const res = axiosInstance.post('/api/auth/email-password/signup', data)
+      const res = axiosInstance.post('/api/auth/email-password/signup', data);
       toast.promise(res, {
         pending: 'Creating account ...',
         success: {
           render({ data }) {
             const userId = data?.data?.data?.user?._id;
             const userRole = data?.data?.data?.user?.role;
-            userState.setUser({ _id: userId, role: userRole })
-            reset()
-            navigate('/')
-            return data?.data?.message
+            userState.setUser({ _id: userId, role: userRole });
+            reset();
+            navigate('/');
+            return data?.data?.message;
           },
         },
         error: {
@@ -45,13 +54,11 @@ function signup() {
                 setError('email',{ type: 'manual', message: data?.response?.data?.message });
               }
             }
-            return "Signup failed"
+            return 'Signup failed';
           },
         },
-      }
-      )
-      return (await res).data
-
+      });
+      return (await res).data;
     } catch (error) {
       if (isAxiosError(error)) {
         console.error(error.response?.data?.message);
@@ -60,7 +67,6 @@ function signup() {
       }
     }
   };
-
 
   return (
     <div className="m-4 flex-grow cursor-default bg-white py-4">
@@ -106,17 +112,25 @@ function signup() {
               <p className="p-3 text-xs text-red-500">{`${errors.email.message}`}</p>
             )}
           </div>
-          <div className="mb-2">
+          <div className="relative mb-3">
             <input
               {...register('password')}
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               placeholder="Password"
               className="w-full rounded-lg bg-zinc-100 p-3 font-normal placeholder:text-sm placeholder:text-neutral-500"
             />
-            {errors.password && (
-              <p className="p-3 text-xs text-red-500">{`${errors.password.message}`}</p>
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 transform focus:outline-none"
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? <Passwordvisible /> : <Passwordhide />}
+            </button>
+            {errors.fullName && (
+              <p className="p-3 text-xs text-red-500">{errors.fullName.message}</p>
             )}
           </div>
+
           <div className="mb-4">
             <input
               {...register('confirmPassword')}
@@ -167,5 +181,4 @@ function signup() {
     </div>
   );
 }
-
 export default signup;

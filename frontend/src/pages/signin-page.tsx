@@ -10,6 +10,9 @@ import { toast } from 'react-toastify';
 import { AxiosError, isAxiosError } from 'axios';
 import axiosInstance from '@/helpers/axios-instance';
 import userState from '@/utils/user-state';
+import { useState } from 'react';
+import Passwordhide from '../assets/svg/passwordhide.tsx';
+import Passwordvisible from '../assets/svg/passwordvisible.tsx';
 
 function signin() {
   const navigate = useNavigate();
@@ -21,11 +24,15 @@ function signin() {
     setError
   } = useForm<TSignInSchema>({ resolver: zodResolver(signInSchema) });
 
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   const onSubmit = async (data: FieldValues) => {
     try {
-      const response = axiosInstance.post('/api/auth/email-password/signin',
-        data
-      );
+      const response = axiosInstance.post('/api/auth/email-password/signin', data);
 
       toast.promise(response, {
         pending: 'Checking credentials ...',
@@ -33,10 +40,10 @@ function signin() {
           render({ data }) {
             const userId = data?.data?.data?.user?._id;
             const userRole = data?.data?.data?.user?.role;
-            userState.setUser({ _id: userId, role: userRole })
-            reset()
-            navigate('/')
-            return data?.data?.message
+            userState.setUser({ _id: userId, role: userRole });
+            reset();
+            navigate('/');
+            return data?.data?.message;
           },
         },
         error: {
@@ -48,13 +55,12 @@ function signin() {
                 setError("password",{ type: 'manual', message: data?.response?.data?.message});
               }
             }
-            return "Signin failed"
+            return 'Signin failed';
           },
         },
-      }
-      )
+      });
 
-      return (await response).data
+      return (await response).data;
     } catch (error) {
       if (isAxiosError(error)) {
         console.error(error.response?.data?.message);
@@ -87,15 +93,22 @@ function signin() {
             )}
           </div>
 
-          <div className="mb-4">
+          <div className="relative mb-4">
             <input
               {...register('password')}
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               placeholder="Password"
               className="w-full rounded-lg bg-zinc-100 p-3 font-normal placeholder:text-sm placeholder:text-neutral-500"
             />
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 transform focus:outline-none"
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? <Passwordvisible /> : <Passwordhide />}
+            </button>
             {errors.password && (
-              <p className="p-3 text-xs text-red-500">{`${errors.password.message}`}</p>
+              <p className="p-3 text-xs text-red-500">{errors.password.message}</p>
             )}
           </div>
 
