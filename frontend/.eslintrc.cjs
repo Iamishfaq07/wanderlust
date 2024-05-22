@@ -6,12 +6,21 @@ module.exports = {
     'plugin:@typescript-eslint/recommended-type-checked',
     'plugin:react-hooks/recommended',
     'plugin:@typescript-eslint/stylistic-type-checked',
-    'prettier',
+    'plugin:prettier/recommended',
   ],
-  ignorePatterns: ['dist', '.eslintrc.cjs'],
+  ignorePatterns: ['dist', '.eslintrc.cjs', 'node_modules/'],
   parser: '@typescript-eslint/parser',
-  plugins: ['react-refresh'],
+  plugins: [
+    'react-refresh',
+    '@typescript-eslint', 
+    'import', 
+  ],
+  parserOptions: {
+    project: './tsconfig.json',
+    tsconfigRootDir: __dirname
+  },
   rules: {
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+
   },
 };
